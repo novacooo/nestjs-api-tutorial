@@ -5,6 +5,7 @@ import * as pactum from 'pactum';
 import { AppModule } from 'src/app.module';
 import { AuthDto } from 'src/auth/dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { EditUserDto } from 'src/user/dto';
 
 const BASE_URL = 'http://localhost:3333';
 
@@ -156,7 +157,25 @@ describe('App e2e', () => {
     });
 
     describe('Edit user', () => {
-      it.todo('should edit user');
+      const path = '/user/edit';
+
+      it('should edit user', () => {
+        const editUserDto: EditUserDto = {
+          firstName: 'John',
+          email: 'john@email.com',
+        };
+
+        return pactum
+          .spec()
+          .patch(path)
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .withBody(editUserDto)
+          .expectStatus(HttpStatus.OK)
+          .expectBodyContains(editUserDto.firstName)
+          .expectBodyContains(editUserDto.email);
+      });
     });
   });
 
