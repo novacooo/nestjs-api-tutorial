@@ -1,4 +1,4 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as pactum from 'pactum';
 
@@ -45,22 +45,83 @@ describe('App e2e', () => {
     };
 
     describe('Sign up', () => {
+      const path = '/auth/signup';
+
+      it('should throw exception if no body provided', () => {
+        return pactum.spec().post(path).expectStatus(HttpStatus.BAD_REQUEST);
+      });
+
+      it('should throw exception if email is empty', () => {
+        return pactum
+          .spec()
+          .post(path)
+          .withBody({ password: authDto.password })
+          .expectStatus(HttpStatus.BAD_REQUEST);
+      });
+
+      it('should throw exception if password is empty', () => {
+        return pactum
+          .spec()
+          .post(path)
+          .withBody({ email: authDto.email })
+          .expectStatus(HttpStatus.BAD_REQUEST);
+      });
+
       it('should sign up user', () => {
         return pactum
           .spec()
-          .post('/auth/signup')
+          .post(path)
           .withBody(authDto)
-          .expectStatus(201);
+          .expectStatus(HttpStatus.CREATED);
+      });
+
+      it('should not sign up if credentials are taken', () => {
+        return pactum
+          .spec()
+          .post(path)
+          .withBody(authDto)
+          .expectStatus(HttpStatus.FORBIDDEN);
       });
     });
 
     describe('Sign in', () => {
+      const path = '/auth/signin';
+
+      it('should throw exception if no body provided', () => {
+        return pactum.spec().post(path).expectStatus(HttpStatus.BAD_REQUEST);
+      });
+
+      it('should throw exception if email is empty', () => {
+        return pactum
+          .spec()
+          .post(path)
+          .withBody({ password: authDto.password })
+          .expectStatus(HttpStatus.BAD_REQUEST);
+      });
+
+      it('should throw exception if password is empty', () => {
+        return pactum
+          .spec()
+          .post(path)
+          .withBody({ email: authDto.email })
+          .expectStatus(HttpStatus.BAD_REQUEST);
+      });
+
+      it('should not sign in user if credentials are wrong', () => {
+        return pactum
+          .spec()
+          .post(path)
+          .withBody({ email: 'wrong@email.com', password: '123' })
+          .expectStatus(HttpStatus.FORBIDDEN);
+      });
+
       it('should sign in user', () => {
         return pactum
           .spec()
-          .post('/auth/signin')
+          .post(path)
           .withBody(authDto)
-          .expectStatus(200);
+          .expectStatus(HttpStatus.OK)
+          .stores('userAt', 'access_token');
       });
     });
   });
