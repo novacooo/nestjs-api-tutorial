@@ -128,7 +128,31 @@ describe('App e2e', () => {
 
   describe('User', () => {
     describe('Get me', () => {
-      it.todo('should get me');
+      const path = '/user/me';
+
+      it('should not get current user if unauthorized', () => {
+        return pactum.spec().get(path).expectStatus(HttpStatus.UNAUTHORIZED);
+      });
+
+      it('should not get current user if wrong token', () => {
+        return pactum
+          .spec()
+          .get(path)
+          .withHeaders({
+            Authorization: 'Bearer 123',
+          })
+          .expectStatus(HttpStatus.UNAUTHORIZED);
+      });
+
+      it('should get current user', () => {
+        return pactum
+          .spec()
+          .get(path)
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .expectStatus(HttpStatus.OK);
+      });
     });
 
     describe('Edit user', () => {
@@ -149,11 +173,11 @@ describe('App e2e', () => {
       it.todo('should get bookmark by id');
     });
 
-    describe('Edit bookmark', () => {
+    describe('Edit bookmark by id', () => {
       it.todo('should edit bookmark');
     });
 
-    describe('Delete bookmark', () => {
+    describe('Delete bookmark by id', () => {
       it.todo('should delete bookmark');
     });
   });
